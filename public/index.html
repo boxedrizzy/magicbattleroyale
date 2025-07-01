@@ -1,0 +1,194 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Combat IO</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+</head>
+<body>
+    <!-- Play Screen -->
+    <div id="playScreen" class="screen">
+        <div class="screen-content">
+            <h1 class="game-title">Magic Combat IO</h1>
+            <p class="game-description">The ultimate wizard battle royale experience!</p>
+            <div class="player-count">
+                <span id="playerCount">0</span> wizards online
+            </div>
+            <div class="name-input-container">
+                <input type="text" id="playerNameInput" class="name-input" placeholder="Enter your wizard name..." maxlength="20">
+            </div>
+            <button id="playButton" class="play-button">⚡ PLAY NOW ⚡</button>
+            <div class="game-features">
+                <div class="feature">
+                    <div class="feature-icon">🔥</div>
+                    <div class="feature-text">Master 7 Elements</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">⚔️</div>
+                    <div class="feature-text">Real-time PvP Combat</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🏆</div>
+                    <div class="feature-text">Climb the Leaderboard</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🌟</div>
+                    <div class="feature-text">Unlock SSS Spells</div>
+                </div>
+            </div>
+            <div class="game-stats">
+                <div class="stat-item">
+                    <span class="stat-number">7</span>
+                    <span class="stat-label">Magic Types</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">28</span>
+                    <span class="stat-label">Unique Spells</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">∞</span>
+                    <span class="stat-label">Adventures</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Death Screen -->
+    <div id="deathScreen" class="screen hidden">
+        <div class="screen-content">
+            <h1 class="death-title">You Have Fallen</h1>
+            <div id="deathStats" class="death-stats">
+                <p>Level Reached: <span id="finalLevel">1</span></p>
+                <p>Spells Learned: <span id="spellsLearned">0</span></p>
+                <p>Enemies Defeated: <span id="enemiesDefeated">0</span></p>
+                <p>Time Survived: <span id="timeSurvived">0:00</span></p>
+            </div>
+            <button id="respawnButton" class="respawn-button">Rise Again</button>
+            <button id="returnToMenuButton" class="menu-button">Return to Menu</button>
+        </div>
+    </div>
+
+    <!-- Game Container -->
+    <div id="gameContainer" class="hidden">
+        <div id="hud">
+            <div id="playerInfo">
+                <div class="stat">
+                    <span class="label">Level:</span>
+                    <span id="playerLevel">1</span>
+                </div>
+                <div class="stat">
+                    <span class="label">HP:</span>
+                    <div id="healthBar">
+                        <div id="healthFill"></div>
+                    </div>
+                    <span id="healthText">100/100</span>
+                </div>
+                <div class="stat">
+                    <span class="label">XP:</span>
+                    <div id="expBar">
+                        <div id="expFill"></div>
+                    </div>
+                    <span id="expText">0/100</span>
+                </div>
+            </div>
+
+            <button id="magicMenuBtn" class="magic-menu-btn">Magic Upgrades</button>
+            <button id="transformationBtn" class="transformation-btn">Transformations</button>
+            <button id="dungeonButton" class="dungeon-button">Enter Dungeon</button>
+            
+            <!-- Minimap -->
+            <div id="minimap">
+                <canvas id="minimapCanvas" width="200" height="200"></canvas>
+            </div>
+            
+            <!-- Leaderboard -->
+            <div id="leaderboard" class="collapsed">
+                <div id="leaderboardHeader">
+                    <span>Leaderboard</span>
+                    <button id="toggleLeaderboard">▼</button>
+                </div>
+                <div id="leaderboardContent">
+                    <div id="leaderboardList"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="gameCanvas"></div>
+
+        <!-- Magic Inventory Bar at bottom -->
+        <div id="magicInventory" class="magic-inventory">
+            <div class="inventory-slots" id="inventorySlots">
+                <!-- Spell slots will be added dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <div id="rarityPopup" class="rarity-popup hidden">
+        <div class="rarity-text"></div>
+    </div>
+
+    <!-- Magic Upgrade Menu -->
+    <div id="magicUpgradeModal" class="magic-modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Magic Upgrades</h2>
+                <button id="closeMagicModal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="magicUpgradeList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transformation Modal -->
+    <div id="transformationModal" class="magic-modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔮 Transformations</h2>
+                <button id="closeTransformationModal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="transformation-info">
+                    <p>Unlock powerful transformations that grant temporary abilities at the cost of cooldowns!</p>
+                    <div id="transformationList" class="transformation-list">
+                        <!-- Transformations will be added dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dungeon Modal -->
+    <div id="dungeonModal" class="magic-modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>The Mystical Dungeon</h2>
+                <button id="closeDungeonModal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="dungeon-info">
+                    <p>Enter the ancient dungeon to discover the legendary <strong>Void Magic</strong> - a power that bends reality itself!</p>
+                    <div class="dungeon-requirements">
+                        <h3>Requirements to Enter:</h3>
+                        <ul id="dungeonRequirements">
+                            <li class="requirement" data-type="level">Reach Level 5</li>
+                            <li class="requirement" data-type="magic">Learn at least 4 different magic types</li>
+                        </ul>
+                    </div>
+                    <button id="enterDungeonButton" class="enter-dungeon-button" disabled>Enter Dungeon</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="Player.js"></script>
+    <script src="Scroll.js"></script>
+    <script src="ui.js"></script>
+    <script src="game.js"></script>
+    <script src="client.js"></script>
+</body>
+</html>
